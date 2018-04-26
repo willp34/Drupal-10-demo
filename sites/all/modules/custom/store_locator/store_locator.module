@@ -82,16 +82,90 @@ function store_locator_import($form, &$form_state)
  */
 function store_locator_import_submit($form, &$form_state)
 {
+	global $user;
     //the submitted form data will be in here
-    dpm($form_state);
+   //dpm($form_state['values']['csv_data']);
     //The CSV data will be in $form_state['values']['csv_data']
-    dpm($form_state['values']['csv_data']);
+   // dpm($form_state['values']['csv_data']);
     
     //HINT: Use str-getcsv or fgetcsv to parse the string in to an array
     //http://php.net/manual/en/function.str-getcsv.php http://php.net/manual/en/function.fgetcsv.php
     
-    
-    
+  // dpm(count($arr));
+   if(!empty($form_state['values']['csv_data'])){
+	   $storedata = explode("\n",$form_state['values']['csv_data']);
+	   foreach ($storedata as $storeItem){
+	  $storeItemdata = explode(",",$storeItem);
+			$item = str_getcsv($storeItem);
+			
+			$node_title = NULL;
+			$node_title = db_query('SELECT title FROM node WHERE title=:title', array(':title'=>$item[0]))->fetchField();
+           
+				if (empty($node_title )) {
+				  // do something
+					//dpm("willl   added"    .$item[1]);
+					$newNode = (object) NULL;
+					$newNode->type ="store";
+					$newNode->uid = $user->uid;
+					$newNode->created = strtotime("now");
+					$newNode->status = 1;
+					$newNode->title = $item[0];
+					$newNode->language = "en";
+					$newNode->comment= 0;
+					$newNode->promote =0;
+					$newNode->moderate =0;
+					
+					if($item[4]=="Superstore"){
+						$newNode->sticky=1;
+					}
+					else{
+						$newNode->sticky=0;						
+					}
+					//add additional fields
+					
+					$newNode->field_address[LANGUAGE_NONE][0]['value'] = $item[1];
+					
+							$address = urlencode($item[1]);
+							$request = file_get_contents("https://maps.google.com/maps/api/geocode/json?address=" . $address . "&sensor=false&&key=AIzaSyDkn1amsOkmbqBDQl0uJlorDNfRYbnk2u8");
+							$json = json_decode($request, true);
+							$longatude =$json['results'][0]['geometry']['location']['lng'];
+							$latitude =$json['results'][0]['geometry']['location']['lat'];
+				//	$newNode->field_opening_times = $item[2];
+					$newNode->field_phone_number[LANGUAGE_NONE][0]['value'] = $item[2];
+					$newNode->field_store_manager[LANGUAGE_NONE][0]['value'] = $item[3];
+					$newNode->field_store_type[LANGUAGE_NONE][0]['value'] = $item[4];
+					
+					if(!empty($item[6])||!empty($item[5])){
+						$newNode->field_latitude[LANGUAGE_NONE][0]['value'] = $item[5];
+						$newNode->field_longitude[LANGUAGE_NONE][0]['value'] = $item[6];
+						
+					}
+					else{
+						$newNode->field_latitude[LANGUAGE_NONE][0]['value'] = $latitude;
+						$newNode->field_longitude[LANGUAGE_NONE][0]['value'] = $longatude;
+						//dpm($latitude."   ".$longatude);
+					
+					}
+					
+					node_save($newNode);
+					//dpm("http://maps.google.com/maps/api/geocode/json?address=" . $address . "&sensor=false&key=AIzaSyDkn1amsOkmbqBDQl0uJlorDNfRYbnk2u8");
+				//	dpm($latitude.'  '.$longatude);
+  
+  
+				}
+				else{
+					//dpm("node exists");
+				} 
+
+			 }
+					dpm("import completed");
+   }
+   else{
+	   dpm("Import terminated no data found");
+   }
+   
+   
+   
 }
 
 
@@ -110,7 +184,12 @@ function store_locator_import_submit($form, &$form_state)
  */
 function store_locator_view_all()
 {
-    $html = 'Your HTML Here.';
+	$view = views_get_view('store_locator');
+	$view->set_display('Master');
+	$view->get_title();
+	$response = $view->preview('page');
+	 // echo views_embed_view('view_machine_name', 'page');
+    $html =  $response;
     return $html;
 }
 
@@ -118,7 +197,39 @@ function store_locator_view_all()
  * The store ID is passed straight in to this function
  */
 function store_locator_view_store($storeId)
-{
+{  
+		$node = node_load($storeId);
+	    if (!empty($node->nid)) {
+			$page  = array(
+					'store_locator_view_store' => array(
+							'#theme' => 'store_page',
+							'#contents' => $node,
+					),
+					'#attached' => array(
+						'#css' => array(
+							array(
+								'type' => 'file',
+								'data' => drupal_get_path('module','store_locator').'/store_locator.css',
+							),
+						),
+					),
+			);
+		}
+		else {
+			$page = "<h1>Stor does not exist</h1>";
+		}
+	
     $html = 'The Store ID is ' . $storeId;
-    return $html;
+    return $page;
+}
+
+function  store_locator_theme()
+{
+	$store_theme = array(
+			'store_page' => array(
+					'variables' => array('contents'=>array()),
+					'template' => 'store-page'
+			),
+	);
+	return $store_theme;
 }
