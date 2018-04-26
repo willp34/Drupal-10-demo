@@ -8,7 +8,7 @@
                 <div class=" col-md-6 form-group">
 					<p><label for="name">Store Manager </label> <?php print  $contents->field_store_manager[LANGUAGE_NONE][0]['value'] ;?>  </p>
                     <p><label for="name">Address </label> <?php print  $contents->field_address[LANGUAGE_NONE][0]['value'] ;?></p>
-					 <p><label for="name">Telephone </label><?php print  $contents->field_phone_number[LANGUAGE_NONE][0]['value'] ;?></p>
+					 <p><label for="name">Telephone </label> <?php print  $contents->field_phone_number[LANGUAGE_NONE][0]['value'] ;?></p>
 						<iframe src="https://maps.google.com/maps?q=<?php print  $contents->field_latitude[LANGUAGE_NONE][0]['value'] ;?>,<?php print  $contents->field_longitude[LANGUAGE_NONE][0]['value'] ;?>&hl=en&z=14&amp;output=embed" width="100%" height="400" frameborder="0" style="border:0" allowfullscreen></iframe>
 			   </div>
 			   
