@@ -100,56 +100,54 @@ function store_locator_import_submit($form, &$form_state)
 			
 			$node_title = NULL;
 			$node_title = db_query('SELECT title FROM node WHERE title=:title', array(':title'=>$item[0]))->fetchField();
-           
+      
 				if (empty($node_title )) {
 				  // do something
-					//dpm("willl   added"    .$item[1]);
-					$newNode = (object) NULL;
-					$newNode->type ="store";
-					$newNode->uid = $user->uid;
-					$newNode->created = strtotime("now");
-					$newNode->status = 1;
-					$newNode->title = $item[0];
-					$newNode->language = "en";
-					$newNode->comment= 0;
-					$newNode->promote =0;
-					$newNode->moderate =0;
+				//	dpm("willl   added"    .$item[1]);
+					$storeNode = (object) NULL;
+					$storeNode->type ="store";
+					$storeNode->uid = $user->uid;
+					$storeNode->created = strtotime("now");
+					$storeNode->status = 1;
+					$storeNode->title = $item[0];
+					$storeNode->language = "en";
+					$storeNode->comment= 0;
+					$storeNode->promote =0;
+					$storeNode->moderate =0;
 					
 					if($item[4]=="Superstore"){
-						$newNode->sticky=1;
+						$storeNode->sticky=1;
 					}
 					else{
-						$newNode->sticky=0;						
+						$storeNode->sticky=0;						
 					}
 					//add additional fields
 					
-					$newNode->field_address[LANGUAGE_NONE][0]['value'] = $item[1];
+					$storeNode->field_address[LANGUAGE_NONE][0]['value'] = $item[1];
 					
 							$address = urlencode($item[1]);
 							$request = file_get_contents("https://maps.google.com/maps/api/geocode/json?address=" . $address . "&sensor=false&&key=AIzaSyDkn1amsOkmbqBDQl0uJlorDNfRYbnk2u8");
 							$json = json_decode($request, true);
 							$longatude =$json['results'][0]['geometry']['location']['lng'];
 							$latitude =$json['results'][0]['geometry']['location']['lat'];
-				//	$newNode->field_opening_times = $item[2];
-					$newNode->field_phone_number[LANGUAGE_NONE][0]['value'] = $item[2];
-					$newNode->field_store_manager[LANGUAGE_NONE][0]['value'] = $item[3];
-					$newNode->field_store_type[LANGUAGE_NONE][0]['value'] = $item[4];
+					$storeNode->field_opening_times = $item[2];
+					$storeNode->field_phone_number[LANGUAGE_NONE][0]['value'] = $item[2];
+					$storeNode->field_store_manager[LANGUAGE_NONE][0]['value'] = $item[3];
+					$storeNode->field_store_type[LANGUAGE_NONE][0]['value'] = $item[4];
 					
 					if(!empty($item[6])||!empty($item[5])){
-						$newNode->field_latitude[LANGUAGE_NONE][0]['value'] = $item[5];
-						$newNode->field_longitude[LANGUAGE_NONE][0]['value'] = $item[6];
+						$storeNode->field_latitude[LANGUAGE_NONE][0]['value'] = $item[5];
+						$storeNode->field_longitude[LANGUAGE_NONE][0]['value'] = $item[6];
 						
 					}
 					else{
-						$newNode->field_latitude[LANGUAGE_NONE][0]['value'] = $latitude;
-						$newNode->field_longitude[LANGUAGE_NONE][0]['value'] = $longatude;
+						$storeNode->field_latitude[LANGUAGE_NONE][0]['value'] = $latitude;
+						$storeNode->field_longitude[LANGUAGE_NONE][0]['value'] = $longatude;
 						//dpm($latitude."   ".$longatude);
-					
 					}
-					
-					node_save($newNode);
+					node_save($storeNode);
 					//dpm("http://maps.google.com/maps/api/geocode/json?address=" . $address . "&sensor=false&key=AIzaSyDkn1amsOkmbqBDQl0uJlorDNfRYbnk2u8");
-				//	dpm($latitude.'  '.$longatude);
+			//	dpm($latitude.'  '.$longatude);
   
   
 				}
@@ -199,7 +197,7 @@ function store_locator_view_all()
 function store_locator_view_store($storeId)
 {  
 		$node = node_load($storeId);
-	    if (!empty($node->nid)) {
+	    if (!empty($node->nid) && ($node->type=="store") ) {
 			$page  = array(
 					'store_locator_view_store' => array(
 							'#theme' => 'store_page',
@@ -216,7 +214,7 @@ function store_locator_view_store($storeId)
 			);
 		}
 		else {
-			$page = "<h1>Stor does not exist</h1>";
+			$page = "<h1>Store does not exist</h1>";
 		}
 	
     $html = 'The Store ID is ' . $storeId;
