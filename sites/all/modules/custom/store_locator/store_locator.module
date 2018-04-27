@@ -94,6 +94,7 @@ function store_locator_import_submit($form, &$form_state)
   // dpm(count($arr));
    if(!empty($form_state['values']['csv_data'])){
 	   $storedata = explode("\n",$form_state['values']['csv_data']);
+	   array_shift($storedata);
 	   foreach ($storedata as $storeItem){
 	  $storeItemdata = explode(",",$storeItem);
 			$item = str_getcsv($storeItem);
