@@ -1,0 +1,6 @@
+name: Drupal Store Locator
+description: Store Locator Module
+package: Proctors Custom
+
+type: module
+core_version_requirement: ^10 || ^11
