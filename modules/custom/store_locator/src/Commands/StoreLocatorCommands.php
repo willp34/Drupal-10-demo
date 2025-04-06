@@ -8,26 +8,29 @@ use Psr\Log\LoggerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+
+use Drupal\store_locator\Service\CsvImporter;
 /**
  * Defines Drush commands for Store Locator.
  */
 class StoreLocatorCommands extends DrushCommands {
   
   protected ?LoggerInterface $logger;
-
-
+  protected $csvImporter;
  /**
    * Constructor.
    */
- public function __construct(LoggerChannelFactoryInterface $loggerFactory) {
+ public function __construct(LoggerChannelFactoryInterface $loggerFactory, CsvImporter $csvImporter) {
         $this->logger = $loggerFactory->get('store_locator'); // Get a logger channel
+		$this->csvImporter = $csvImporter;
     }
 /**
    * Factory method for dependency injection.
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('logger.factory')
+      $container->get('logger.factory'),
+	  $container->get('store_locator.csv_processor')
     );
   }
 
@@ -39,18 +42,24 @@ class StoreLocatorCommands extends DrushCommands {
   public function sayHello(array $options = ['name' => '']): void {
     $name = $options['name'] ?: 'world';
     $message = "Hello, $name!";
+	
     $this->logger->notice($message);
     $this->output()->writeln($message);
   }
    
    
     #[CLI\Command(name: 'store_locator:import-file')]
-  #[CLI\Usage(name: 'drush store_locator:import-file ', description: 'Import file and store data into content tpy Store.')]
-  #[CLI\Help(description: 'Impport stores from csv file', synopsis: 'Example: Store.csv')]
+	#[CLI\Usage(name: 'drush store_locator:import-file --dry-run', description: 'Import file and store data into content ty Store.')]
+	#[CLI\Help(description: 'Import stores from CSV file', synopsis: 'Example: Store.csv')]
  
-	public function Import_file(){
-	   
-	   $this->output()->writeln("Import file");
+	public function importFile( array $options = ['file' => NULL, 'dry-run' => FALSE]){
+	   $file_path = DRUPAL_ROOT . '\instructions\uk_stores.csv';
+	   if ($options['dry-run']) {
+		  $this->output()->writeln("<info>Dry run mode: No changes will be made.</info>");
+		} else {
+		   $this->csvImporter->readCsvIndex($file_path);
+		   $this->output()->writeln("Import file");
+		}
    }
 }
 

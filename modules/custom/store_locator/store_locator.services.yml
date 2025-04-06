@@ -1,0 +1,7 @@
+services:
+  store_locator.csv_processor:
+    class: Drupal\store_locator\Service\CsvImporter
+    arguments:
+      - '@entity_type.manager'
+      - '@messenger'
+      - '@http_client'
