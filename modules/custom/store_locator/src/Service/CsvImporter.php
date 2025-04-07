@@ -5,6 +5,7 @@ namespace Drupal\store_locator\Service;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\node\Entity\Node;
 use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\Core\Session\AccountProxyInterface;
 use GuzzleHttp\ClientInterface;
 
 class CsvImporter {
@@ -12,12 +13,15 @@ class CsvImporter {
   protected $entityTypeManager;
   protected $messenger;
   protected $httpClient;
+  protected $currentUser;
   protected $googleApiKey;
 
-  public function __construct(EntityTypeManagerInterface $entityTypeManager, MessengerInterface $messenger, ClientInterface $httpClient) {
+  public function __construct(EntityTypeManagerInterface $entityTypeManager, MessengerInterface $messenger, ClientInterface $httpClient,
+  AccountProxyInterface $currentUser) {
     $this->entityTypeManager = $entityTypeManager;
     $this->messenger = $messenger;
     $this->httpClient = $httpClient;
+	$this->currentUser = $currentUser; 
     $this->googleApiKey = 'AIzaSyDkn1amsOkmbqBDQl0uJlorDNfRYbnk2u8'; // Store API key in config
   }
 
@@ -47,6 +51,7 @@ class CsvImporter {
         if (empty($values)) {
           $new_store = [
             'type' => 'store',
+			'uid' => $this->currentUser->id(),
             'title' => $row_data[0],
             'body' => ['value' => 'body text', 'format' => 'full_html'],
             'field_address' => $row_data[1],
