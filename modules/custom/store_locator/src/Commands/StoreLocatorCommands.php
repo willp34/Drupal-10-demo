@@ -7,7 +7,7 @@ use Drush\Commands\DrushCommands;
 use Psr\Log\LoggerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-
+use Drupal\node\Entity\Node;
 
 use Drupal\store_locator\Service\CsvImporter;
 /**
@@ -30,7 +30,7 @@ class StoreLocatorCommands extends DrushCommands {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('logger.factory'),
-	  $container->get('store_locator.csv_processor')
+	  $container->get('store_locator.csv_importer')
     );
   }
 
@@ -61,5 +61,26 @@ class StoreLocatorCommands extends DrushCommands {
 		   $this->output()->writeln("Import file");
 		}
    }
+   
+    #[CLI\Command(name: 'store_locator:remove')]
+	#[CLI\Usage(name: 'drush store_locator:remoe ', description: 'remove content type store data from drupal site.')]
+	#[CLI\Help(description: 'remove content type store data from drupal site.')]
+   
+    public function removeStoreContent(): void {
+    $storage = \Drupal::entityTypeManager()->getStorage('node');
+    
+    $nids = \Drupal::entityQuery('node')
+      ->accessCheck(FALSE)
+      ->condition('type', 'store')
+      ->execute();
+
+		if (!empty($nids)) {
+		  $nodes = $storage->loadMultiple($nids);
+		  $storage->delete($nodes);
+		  echo count($nodes) . " nodes of type 'store' deleted.\n";
+		} else {
+		  echo "No nodes of type 'store' found.\n";
+		}
+	  }
 }
 

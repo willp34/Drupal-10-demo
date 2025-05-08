@@ -5,6 +5,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+
 use Drupal\file\Entity\File;
 
 
@@ -22,7 +23,7 @@ class StoreLocatorImportForm extends FormBase {
   
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('store_locator.csv_processor')
+      $container->get('store_locator.csv_importer')
     );
   }
   /**

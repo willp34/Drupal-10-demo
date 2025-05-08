@@ -2,7 +2,7 @@
 namespace Drupal\store_locator\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-
+use Drupal\store_locator\Form\CustomerDetailsForm;
 /**
  * Provides route responses for the Example module.
  */
@@ -16,11 +16,9 @@ class StoreController extends ControllerBase {
    */
   public function import_stores() {
 	  
-	   \Drupal::messenger()->addMessage($this->t('CSV data received!'));
-	 
-    return [
-      '#markup' => 'Hello, world',
-    ];
+	
+	 $simpleform = \Drupal::formBuilder()->getForm(CustomerDetailsForm::class);
+    return $simpleform;
   }
 
 }

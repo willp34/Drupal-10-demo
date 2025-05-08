@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\node\Entity\Node;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use GuzzleHttp\ClientInterface;
 
 class CsvImporter {
@@ -16,13 +17,21 @@ class CsvImporter {
   protected $currentUser;
   protected $googleApiKey;
 
-  public function __construct(EntityTypeManagerInterface $entityTypeManager, MessengerInterface $messenger, ClientInterface $httpClient,
-  AccountProxyInterface $currentUser) {
-    $this->entityTypeManager = $entityTypeManager;
+  public function __construct(
+  EntityTypeManagerInterface $entityTypeManager, 
+  MessengerInterface $messenger, 
+  ClientInterface $httpClient, 
+  AccountProxyInterface $currentUser,
+    ConfigFactoryInterface $configFactory
+  ){
+	$this->entityTypeManager = $entityTypeManager;
     $this->messenger = $messenger;
     $this->httpClient = $httpClient;
 	$this->currentUser = $currentUser; 
-    $this->googleApiKey = 'AIzaSyDkn1amsOkmbqBDQl0uJlorDNfRYbnk2u8'; // Store API key in config
+	$this->configFactory = $configFactory; // <---- MISSING LINE
+	  // Load the config at construction time
+    $this->googleApiKey = $this->configFactory->get('store_locator.settings')->get('api_key');
+   // $this->googleApiKey = 'AIzaSyDkn1amsOkmbqBDQl0uJlorDNfRYbnk2u8'; // Store API key in config
   }
 
   public function readCsvIndex($file_path) {
@@ -41,14 +50,25 @@ class CsvImporter {
     }
 
     $headers = str_getcsv(array_shift($storedata));
-
+	$number_inserted_stores=0;
     foreach ($storedata as $storeItem) {
-      if (!empty(trim($storeItem))) {
+      
+	  if (!empty(trim($storeItem))) {
         $row_data = str_getcsv($storeItem);
         $storage = $this->entityTypeManager->getStorage('node');
         $values = $storage->loadByProperties(['title' => $row_data[0]]);
 
+		$address = urlencode($row_data[0]);
+            $geo_data = $this->getGeocodeData($address);
+
+            if (!$geo_data) {
+              $this->messenger->addError("Could not retrieve location data for: " . $address .'  '.$this->googleApiKey );
+              continue;
+            }
+			
         if (empty($values)) {
+			
+			
           $new_store = [
             'type' => 'store',
 			'uid' => $this->currentUser->id(),
@@ -57,20 +77,34 @@ class CsvImporter {
             'field_address' => $row_data[1],
             'field_phone_number' => $row_data[2],
             'field_store_manager' => $row_data[3],
-            'field_store_type' => $row_data[5],
+            'field_store_type' => $row_data[4],
+			"field_longitude"  => $geo_data['lng'],
+            "field_latitude" => $geo_data['lat'],
             'status' => 1,
           ];
           $node = Node::create($new_store);
           $node->save();
-        } else {
-          $node = reset($values);
+		  $number_inserted_stores++;
+		 
+        } 
+		//else {}
+      }
+    }
+	
+	 $this->messenger->addMessage($number_inserted_stores .' Stores added');
+  }
+
+
+	/*private function edit_Store_details(){
+		
+		$node = reset($values);
 
           if ($node instanceof Node) {
-            $address = urlencode($row_data[1]);
+            $address = urlencode($row_data[0]);
             $geo_data = $this->getGeocodeData($address);
 
             if (!$geo_data) {
-              $this->messenger->addError("Could not retrieve location data for: " . $address);
+              $this->messenger->addError("Could not retrieve location data for: " . $address .'  '.$this->googleApiKey );
               continue;
             }
 
@@ -80,11 +114,7 @@ class CsvImporter {
           } else {
             $this->messenger->addError("Error: Could not load the store node for update.");
           }
-        }
-      }
-    }
-  }
-
+	} */
   private function getGeocodeData($address) {
     try {
       $response = $this->httpClient->request('GET', 'https://maps.googleapis.com/maps/api/geocode/json', [
@@ -100,7 +130,7 @@ class CsvImporter {
         return $data['results'][0]['geometry']['location'];
       }
     } catch (\Exception $e) {
-      \Drupal::logger('your_module')->error('Google API request failed: @message', ['@message' => $e->getMessage()]);
+      \Drupal::logger('store_locator')->error('Google API request failed: @message', ['@message' => $e->getMessage()]);
     }
     return null;
   }

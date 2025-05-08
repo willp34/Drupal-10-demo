@@ -1,0 +1,7 @@
+your_module.custom_page_link:
+  title: 'My Custom Details form'
+  description: 'A custom page added via module'
+  route_name: store_locator.import_stores
+  parent: system.main
+  menu_name: main
+  weight: 0
