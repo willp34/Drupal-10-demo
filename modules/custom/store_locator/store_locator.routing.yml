@@ -1,0 +1,15 @@
+store_locator.import_stores:
+  path: '/import-stores'
+  defaults:
+    _controller: 'Drupal\store_locator\Controller\StoreController::import_stores'
+    _title: 'My first page in D8'
+  requirements:
+    _permission: 'access content'
+    
+store_locator.import:
+  path: '/admin/store-locator/import'
+  defaults:
+    _form: '\Drupal\store_locator\Form\StoreLocatorImportForm'
+    _title: 'Import Store Data'
+  requirements:
+    _permission: 'administer site configuration'

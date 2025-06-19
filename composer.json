@@ -16,10 +16,12 @@
     ],
     "require": {
         "composer/installers": "^2.0",
+        "drupal/bootstrap_barrio": "^5.5",
         "drupal/core-composer-scaffold": "^10.0",
         "drupal/core-project-message": "^10.0",
         "drupal/core-recommended": "^10.0",
-        "drupal/core-vendor-hardening": "^10.0"
+        "drupal/core-vendor-hardening": "^10.0",
+        "drush/drush": "^12.5"
     },
     "conflict": {
         "drupal/drupal": "*"
@@ -96,6 +98,6 @@
     },
     "require-dev": {
         "drupal/devel": "^5.2",
-        "drush/drush": "^12.5"
+		"codeception/codeception": "^5.0"
     }
 }
