@@ -13,7 +13,7 @@ sites/simpletest
 
 ## Ignore all config files 
 
-**/*.settings.yml
+modules/*.settings.yml
 
 ### PHP ###
 
