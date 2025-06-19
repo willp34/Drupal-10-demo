@@ -14,7 +14,6 @@ sites/simpletest
 ## Ignore all config files 
 
 **/*.settings.yml
-
 ### PHP ###
 
 .user.ini
