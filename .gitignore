@@ -11,7 +11,9 @@ sites/*/private
 # Ignore SimpleTest multi-site environment.
 sites/simpletest
 
+## Ignore all config files 
 
+**/*.settings.yml
 ### PHP ###
 
 .user.ini
