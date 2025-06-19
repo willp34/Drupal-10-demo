@@ -31,7 +31,7 @@ class CsvImporter {
 	$this->configFactory = $configFactory; // <---- MISSING LINE
 	  // Load the config at construction time
     $this->googleApiKey = $this->configFactory->get('store_locator.settings')->get('api_key');
-   // $this->googleApiKey = 'AIzaSyDkn1amsOkmbqBDQl0uJlorDNfRYbnk2u8'; // Store API key in config
+  
   }
 
   public function readCsvIndex($file_path) {
